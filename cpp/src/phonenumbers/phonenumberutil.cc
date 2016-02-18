@@ -943,7 +943,7 @@ void PhoneNumberUtil::FormatNationalNumberWithPreferredCarrierCode(
     string* formatted_number) const {
   FormatNationalNumberWithCarrierCode(
       number,
-      number.has_preferred_domestic_carrier_code()
+      !number.get_preferred_domestic_carrier_code().empty()
           ? number.preferred_domestic_carrier_code()
           : fallback_carrier_code,
       formatted_number);
@@ -979,9 +979,9 @@ void PhoneNumberUtil::FormatNumberForMobileDialing(
           number_no_extension, kColombiaMobileToFixedLinePrefix,
           formatted_number);
     } else if ((region_code == "BR") && (is_fixed_line_or_mobile)) {
-      if (number_no_extension.has_preferred_domestic_carrier_code()) {
-      FormatNationalNumberWithPreferredCarrierCode(number_no_extension, "",
-                                                   formatted_number);
+      if (!number_no_extension.get_preferred_domestic_carrier_code().empty()) {
+        FormatNationalNumberWithPreferredCarrierCode(number_no_extension, "",
+                                                     formatted_number);
       } else {
         // Brazilian fixed line and mobile numbers need to be dialed with a
         // carrier code when called within Brazil. Without that, most of the
@@ -1423,8 +1423,8 @@ void PhoneNumberUtil::FormatNsnUsingPatternWithCarrier(
   DCHECK(formatted_number);
   string number_format_rule(formatting_pattern.format());
   if (number_format == PhoneNumberUtil::NATIONAL &&
-      carrier_code.length() > 0 &&
-      formatting_pattern.domestic_carrier_code_formatting_rule().length() > 0) {
+      !carrier_code.empty() &&
+      !formatting_pattern.domestic_carrier_code_formatting_rule().empty()) {
     // Replace the $CC in the formatting rule with the desired carrier code.
     string carrier_code_formatting_rule =
         formatting_pattern.domestic_carrier_code_formatting_rule();
@@ -1877,7 +1877,11 @@ PhoneNumberUtil::ErrorType PhoneNumberUtil::ParseHelper(
         potential_national_number)) {
       normalized_national_number.assign(potential_national_number);
       if (keep_raw_input) {
-        temp_number.set_preferred_domestic_carrier_code(carrier_code);
+        if (!carrier_code.empty()) {
+          temp_number.set_preferred_domestic_carrier_code(carrier_code);
+        } else {
+          temp_number.clear_preferred_domestic_carrier_code();
+        }
       }
     }
   }

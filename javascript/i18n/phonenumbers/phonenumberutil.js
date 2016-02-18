@@ -1663,7 +1663,7 @@ i18n.phonenumbers.PhoneNumberUtil.prototype.
         number, fallbackCarrierCode) {
   return this.formatNationalNumberWithCarrierCode(
       number,
-      number.hasPreferredDomesticCarrierCode() ?
+      number.getPreferredDomesticCarrierCodeOrDefault().length() > 0 ?
           number.getPreferredDomesticCarrierCodeOrDefault() :
           fallbackCarrierCode);
 };
@@ -1718,7 +1718,8 @@ i18n.phonenumbers.PhoneNumberUtil.prototype.formatNumberForMobileDialing =
           i18n.phonenumbers.PhoneNumberUtil
               .COLOMBIA_MOBILE_TO_FIXED_LINE_PREFIX_);
     } else if (regionCode == 'BR' && isFixedLineOrMobile) {
-      formattedNumber = numberNoExt.hasPreferredDomesticCarrierCode() ?
+      formattedNumber = numberNoExt.getPreferredDomesticCarrierCodeOrDefault()
+          .length() > 0 ?
           this.formatNationalNumberWithPreferredCarrierCode(numberNoExt, '') :
           // Brazilian fixed line and mobile numbers need to be dialed with a
           // carrier code when called within Brazil. Without that, most of the
@@ -3874,7 +3875,11 @@ i18n.phonenumbers.PhoneNumberUtil.prototype.parseHelper_ =
             regionMetadata, potentialNationalNumber.toString())) {
       normalizedNationalNumber = potentialNationalNumber;
       if (keepRawInput) {
-        phoneNumber.setPreferredDomesticCarrierCode(carrierCode.toString());
+        if (carrierCode.toString().length() > 0) {
+          phoneNumber.setPreferredDomesticCarrierCode(carrierCode.toString());
+        } else {
+          phoneNumber.clearPreferredDomesticCarrierCode();
+        }
       }
     }
   }
